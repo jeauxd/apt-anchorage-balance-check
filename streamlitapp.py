@@ -33,7 +33,7 @@ if bitwave_file and anchorage_file:
         bitwave_data = bitwave_data[bitwave_data['Qty'] != 0]  # Remove zero quantities
         
         # Extract wallet number from Inventory and create standardized wallet name
-        bitwave_data['Wallet_Number'] = bitwave_data['Inventory'].str.extract(r'(\d+)$')
+        bitwave_data['Wallet_Number'] = bitwave_data['Inventory'].str.extract(r'Wallet\s+(\d+)', expand=False)
         bitwave_data = bitwave_data.dropna(subset=['Wallet_Number'])
         bitwave_data['Wallet_Name'] = 'Wallet ' + bitwave_data['Wallet_Number']
         
@@ -51,7 +51,7 @@ if bitwave_file and anchorage_file:
         anchorage_data = anchorage_data[anchorage_data['Date'] == pd.to_datetime(analysis_date)]
         
         # Extract wallet number from Wallet Name for partial matching
-        anchorage_data['Wallet_Number'] = anchorage_data['Wallet Name'].str.extract(r'(\d+)$')
+        anchorage_data['Wallet_Number'] = anchorage_data['Wallet Name'].str.extract(r'Wallet\s+(\d+)', expand=False)
         anchorage_data = anchorage_data.dropna(subset=['Wallet_Number'])
         anchorage_data['Wallet_Name'] = 'Wallet ' + anchorage_data['Wallet_Number']
         
