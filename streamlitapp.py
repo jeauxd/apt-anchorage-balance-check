@@ -32,12 +32,13 @@ if bitwave_file and anchorage_file:
         bitwave_data = bitwave_data.dropna(subset=['Qty', 'Inventory'])
         bitwave_data = bitwave_data[bitwave_data['Qty'] != 0]  # Remove zero quantities
         
-        # Extract wallet number from Inventory and create standardized wallet name
-        bitwave_data['Wallet_Number'] = bitwave_data['Inventory'].str.extract(r'Wallet\s+(\d+)', expand=False)
-        bitwave_data = bitwave_data.dropna(subset=['Wallet_Number'])
-        bitwave_data['Wallet_Name'] = 'Wallet ' + bitwave_data['Wallet_Number']
+        # Extract wallet prefix and number for unique wallet identification
+        bitwave_data['Wallet_Prefix'] = bitwave_data['Inventory'].str.extract(r'^(Aptos Mainnet Wallet|Coinbase Wallet|Coinbase Corporate Wallet)', expand=False)
+        bitwave_data['Wallet_Number'] = bitwave_data['Inventory'].str.extract(r'(\d+)', expand=False)
+        bitwave_data = bitwave_data.dropna(subset=['Wallet_Prefix', 'Wallet_Number'])
+        bitwave_data['Wallet_Name'] = bitwave_data['Wallet_Prefix'] + ' ' + bitwave_data['Wallet_Number']
         
-        # Group by wallet number and sum quantities for Bitwave
+        # Group by unique wallet name and sum quantities for Bitwave
         bitwave_grouped = bitwave_data.groupby('Wallet_Name', as_index=False)['Qty'].sum()
         bitwave_grouped = bitwave_grouped.rename(columns={'Qty': 'Bitwave_Balance'})
         
@@ -51,9 +52,10 @@ if bitwave_file and anchorage_file:
         anchorage_data = anchorage_data[anchorage_data['Date'] == pd.to_datetime(analysis_date)]
         
         # Extract wallet number from Wallet Name for partial matching
-        anchorage_data['Wallet_Number'] = anchorage_data['Wallet Name'].str.extract(r'Wallet\s+(\d+)', expand=False)
-        anchorage_data = anchorage_data.dropna(subset=['Wallet_Number'])
-        anchorage_data['Wallet_Name'] = 'Wallet ' + anchorage_data['Wallet_Number']
+        anchorage_data['Wallet_Prefix'] = anchorage_data['Wallet Name'].str.extract(r'^(Aptos Mainnet Wallet|Coinbase Wallet|Coinbase Corporate Wallet)', expand=False)
+        anchorage_data['Wallet_Number'] = anchorage_data['Wallet Name'].str.extract(r'(\d+)', expand=False)
+        anchorage_data = anchorage_data.dropna(subset=['Wallet_Prefix', 'Wallet_Number'])
+        anchorage_data['Wallet_Name'] = anchorage_data['Wallet_Prefix'] + ' ' + anchorage_data['Wallet_Number']
         
         # Group by wallet name and sum quantities for Anchorage
         anchorage_grouped = anchorage_data.groupby('Wallet_Name', as_index=False)['Quantity'].sum()
